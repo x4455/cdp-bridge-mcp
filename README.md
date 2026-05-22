@@ -14,7 +14,7 @@
 </div>
 
 <p align="center">
-CDP Bridge MCP 是一个连接 MCP 客户端与真实浏览器会话的桥接服务。它通过配套的 Chromium 扩展接入浏览器页面，让大模型客户端可以读取标签页、扫描页面、执行 JavaScript、截图、导航和读取 Cookie。
+CDP Bridge MCP 是一个连接 MCP 客户端与真实浏览器会话的桥接服务。它通过配套的 Chromium 扩展接入浏览器页面，让大模型客户端可以读取标签页、扫描页面、执行 JavaScript、截图和导航。
 </p>
 
 <p align="center">
@@ -122,7 +122,6 @@ MCP 服务当前暴露以下工具：
 | `browser_wait` | 轮询 JavaScript 条件直到返回真值或超时 |
 | `browser_navigate` | 跳转当前标签页到指定 URL |
 | `browser_screenshot` | 获取页面截图 |
-| `browser_cookies` | 读取 Cookie |
 
 # 快速使用
 

@@ -1,4 +1,4 @@
-// background.js - Cookie + CDP Bridge
+// background.js - CDP Bridge
 try { importScripts('config.js'); } catch (_) {}
 
 const DEFAULT_BRIDGE_CONFIG = {
@@ -66,7 +66,7 @@ async function handleExtMessage(msg, sender) {
   }
 
   // 业务事件
-  if (msg.cmd === 'cookies') return await handleCookies(msg, sender);
+
   if (msg.cmd === 'cdp') return await handleCDP(msg, sender);
   if (msg.cmd === 'batch') return await handleBatch(msg, sender);
   if (msg.cmd === 'tabs') {
@@ -123,26 +123,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   return true;
 });
 
-async function handleCookies(msg, sender) {
-  try {
-    let url = msg.url || sender.tab?.url;
-    if (!url && msg.tabId) {
-      const tab = await chrome.tabs.get(msg.tabId);
-      url = tab.url;
-    }
-    const origin = url.match(/^https?:\/\/[^\/]+/)[0];
-    const all = await chrome.cookies.getAll({ url });
-    const part = await chrome.cookies.getAll({ url, partitionKey: { topLevelSite: origin } }).catch(() => []);
-    const merged = [...all];
-    for (const c of part) {
-      if (!merged.some(x => x.name === c.name && x.domain === c.domain)) merged.push(c);
-    }
-    return { ok: true, data: merged };
-  } catch (e) {
-    return { ok: false, error: e.message };
-  }
-}
-
 async function handleBatch(msg, sender) {
   const R = [];
   let attached = null;
@@ -151,9 +131,7 @@ async function handleBatch(msg, sender) {
   try {
     for (const c of msg.commands) {
       if (c.tabId === undefined && msg.tabId !== undefined) c.tabId = msg.tabId;
-      if (c.cmd === 'cookies') {
-        R.push(await handleCookies(c, sender));
-      } else if (c.cmd === 'tabs') {
+      if (c.cmd === 'tabs') {
         const tabs = (await chrome.tabs.query({})).filter(t => isScriptable(t.url));
         R.push({ ok: true, data: tabs.map(t => ({ id: t.id, url: t.url, title: t.title, active: t.active, windowId: t.windowId })) });
       } else if (c.cmd === 'cdp') {

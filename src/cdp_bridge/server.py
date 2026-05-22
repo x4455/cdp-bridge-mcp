@@ -236,24 +236,5 @@ async def browser_screenshot(tab_id: str = "") -> str:
     return await asyncio.to_thread(_run)
 
 
-@mcp.tool()
-async def browser_cookies(url: str = "") -> str:
-    """Get cookies for the current page or a specific URL.
-
-    Args:
-        url: URL to get cookies for. If empty, gets cookies for the active tab's URL.
-    """
-    def _run():
-        d = get_driver()
-        if len(d.get_all_sessions()) == 0:
-            return json.dumps({"status": "error", "msg": "No browser tabs connected."}, ensure_ascii=False)
-        cmd = {"cmd": "cookies"}
-        if url:
-            cmd["url"] = url
-        result = d.execute_js(json.dumps(cmd))
-        return json.dumps({"status": "success", "cookies": result.get('data', [])}, ensure_ascii=False, default=str)
-    return await asyncio.to_thread(_run)
-
-
 if __name__ == "__main__":
     mcp.run()

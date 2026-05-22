@@ -14,7 +14,7 @@
 </div>
 
 <p align="center">
-CDP Bridge MCP is a bridge service that connects MCP clients to real browser sessions. Through its companion Chromium extension, model clients can list tabs, scan pages, execute JavaScript, capture screenshots, navigate pages, and read cookies.
+CDP Bridge MCP is a bridge service that connects MCP clients to real browser sessions. Through its companion Chromium extension, model clients can list tabs, scan pages, execute JavaScript, capture screenshots, and navigate pages.
 </p>
 
 <p align="center">
@@ -122,7 +122,6 @@ The MCP service currently exposes these tools:
 | `browser_wait` | Poll a JavaScript condition until it returns a truthy value or times out |
 | `browser_navigate` | Navigate the active tab to a URL |
 | `browser_screenshot` | Capture a page screenshot |
-| `browser_cookies` | Read cookies |
 
 # Quick Start
 
