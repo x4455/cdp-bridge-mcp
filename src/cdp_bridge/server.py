@@ -1,5 +1,6 @@
-import asyncio, json, time
+import asyncio, json, time, base64
 import importlib
+from pathlib import Path
 from typing import Any
 from contextvars import ContextVar
 
@@ -292,6 +293,80 @@ async def browser_screenshot(tab_id: str = "") -> str:
         if isinstance(data, dict) and 'data' in data:
             return json.dumps({"status": "success", "format": "png", "base64": data['data']}, ensure_ascii=False)
         return json.dumps({"status": "success", "data": data}, ensure_ascii=False, default=str)
+    return await asyncio.to_thread(_run)
+
+
+@mcp.tool()
+async def save_screenshot(screenshot_json_str_or_file: str, output_path: str = "") -> str:
+    """Save base64 screenshot data to PNG file.
+
+    Args:
+        screenshot_json_str_or_file: JSON output from browser_screenshot tool, or path to a JSON file containing the screenshot data.
+        output_path: Output PNG file path. If not provided:
+            - For file input: saves as {input_stem}.png in the same directory
+            - For string input: saves as screenshot_{timestamp}.png in current directory
+
+    Returns:
+        JSON with status, saved_path, and size_bytes.
+    """
+    def _run():
+        try:
+            # Determine if input is a file path or JSON string
+            input_path = Path(screenshot_json)
+            if input_path.exists() and input_path.is_file():
+                with open(input_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+            else:
+                content = screenshot_json
+
+            # Parse the screenshot JSON result
+            data = json.loads(content)
+
+            # Handle nested result structure: {"status": "success", "result": "{...}"}
+            result_str = data.get("result", "")
+            if result_str:
+                data = json.loads(result_str)
+
+            # Extract base64 data
+            b64_data = data.get("base64", "")
+            if not b64_data:
+                return json.dumps({"status": "error", "msg": "No base64 data found in screenshot JSON"}, ensure_ascii=False)
+
+            # Decode base64
+            img_data = base64.b64decode(b64_data)
+
+            # Determine output path
+            if output_path:
+                save_path = Path(output_path)
+            else:
+                from datetime import datetime
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                # Derive output name from input file if available
+                if input_path.exists():
+                    save_path = input_path.parent / f"{input_path.stem}.png"
+                else:
+                    save_path = Path.cwd() / f"screenshot_{timestamp}.png"
+
+            # Ensure parent directory exists
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # Save the image
+            with open(save_path, "wb") as f:
+                f.write(img_data)
+
+            return json.dumps({
+                "status": "success",
+                "saved_path": str(save_path),
+                "size_bytes": len(img_data)
+            }, ensure_ascii=False)
+
+        except json.JSONDecodeError as e:
+            return json.dumps({"status": "error", "msg": f"Invalid JSON: {e}"}, ensure_ascii=False)
+        except base64.binascii.Error as e:
+            return json.dumps({"status": "error", "msg": f"Invalid base64 data: {e}"}, ensure_ascii=False)
+        except Exception as e:
+            return json.dumps({"status": "error", "msg": str(e)}, ensure_ascii=False)
+
     return await asyncio.to_thread(_run)
 
 
