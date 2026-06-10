@@ -394,7 +394,7 @@ codex mcp add cdp-bridge --transport streamable-http --url http://127.0.0.1:8000
 openclaw mcp set cdp-bridge '{"command":"uvx","args":["cdp-bridge@latest"]}'
 
 # streamable-http 模式
-openclaw mcp set cdp-bridge '{"type":"streamableHttp","url":"http://127.0.0.1:8000/mcp"}'
+openclaw mcp set cdp-bridge '{"transport":"streamable-http","url":"http://remoteip:8000/mcp"}'
 ```
 
 等价的 stdio 配置结构：
