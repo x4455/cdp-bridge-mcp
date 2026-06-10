@@ -302,9 +302,11 @@ async def save_screenshot(screenshot_json_str_or_file: str, output_path: str = "
 
     Args:
         screenshot_json_str_or_file: JSON output from browser_screenshot tool, or path to a JSON file containing the screenshot data.
-        output_path: Output PNG file path. If not provided:
-            - For file input: saves as {input_stem}.png in the same directory
-            - For string input: saves as screenshot_{timestamp}.png in current directory
+        output_path: Output PNG file path or directory. Behavior:
+            - Existing directory: save as {directory}/screenshot_{timestamp}.png
+            - File path with existing parent dir: save directly to that file
+            - File path with non-existing parent dir: return error
+            - Empty/not provided: auto-generate based on input path or timestamp
 
     Returns:
         JSON with status, saved_path, and size_bytes.
@@ -339,17 +341,32 @@ async def save_screenshot(screenshot_json_str_or_file: str, output_path: str = "
             img_data = base64.b64decode(b64_data)
 
             # Determine output path
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             if output_path:
-                save_path = Path(output_path)
-            else:
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                if input_path:
-                    save_path = input_path.parent / f"{input_path.stem}.png"
+                output_path_obj = Path(output_path).resolve()
+                if output_path_obj.is_dir():
+                    # output_path is an existing directory -> save inside with timestamp filename
+                    save_path = output_path_obj / f"screenshot_{timestamp}.png"
+                elif not output_path_obj.parent.exists():
+                    return json.dumps({
+                        "status": "error",
+                        "msg": f"Parent directory does not exist: {output_path_obj.parent}"
+                    }, ensure_ascii=False)
                 else:
-                    save_path = Path.cwd() / f"screenshot_{timestamp}.png"
+                    # output_path is a file path (directory exists) -> save directly
+                    save_path = output_path_obj
+            else:
+                # No output_path provided -> use default logic
+                if input_path:
+                    save_path = input_path.parent.resolve() / f"{input_path.stem}.png"
+                else:
+                    save_path = Path.cwd().resolve() / f"screenshot_{timestamp}.png"
 
             # Ensure parent directory exists
             save_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # Resolve to absolute path
+            save_path = save_path.resolve()
 
             # Save the image
             with open(save_path, "wb") as f:
