@@ -336,6 +336,8 @@ uvx cdp-bridge@latest --transport streamable-http --port 8000 --ws-port 18767
 
 ### Claude Code
 
+**方式一：命令行添加**
+
 ```bash
 # stdio 模式
 claude mcp add cdp-bridge uvx cdp-bridge@latest
@@ -343,6 +345,23 @@ claude mcp add cdp-bridge uvx cdp-bridge@latest
 # streamable-http 模式（先启动服务，再注册）
 claude mcp add cdp-bridge --transport streamable-http http://127.0.0.1:8000/mcp
 ```
+
+**方式二：配置文件（推荐用于 streamable-http 模式）**
+
+在 `~/.claude.json` 中添加 `mcpServers` 配置：
+
+```json
+{
+  "mcpServers": {
+    "cdp-bridge": {
+      "type": "http",
+      "url": "http://127.0.0.1:8000/mcp"
+    }
+  }
+}
+```
+
+> 注意：使用配置文件方式时，需要先启动 `cdp-bridge` 服务（`uvx cdp-bridge@latest --transport streamable-http --port 8000 --ws-port 18765`），然后重启 Claude Code。
 
 ### Codex
 
