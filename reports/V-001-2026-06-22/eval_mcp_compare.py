@@ -44,7 +44,7 @@ from pathlib import Path
 
 ANTHROPIC_API_KEY = os.environ.get(
     "ANTHROPIC_API_KEY",
-    "sk-43055e1244f646878d74e8514f087b94",
+    "sk-xxx",
 )
 ANTHROPIC_BASE_URL = os.environ.get(
     "ANTHROPIC_BASE_URL",
