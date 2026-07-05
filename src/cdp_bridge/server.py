@@ -190,6 +190,33 @@ async def browser_focus_tab(tab_id: str) -> str:
 
 
 @mcp.tool()
+async def browser_close_tab(tab_id: str) -> str:
+    """Close a Chrome tab by tab ID.
+
+    Args:
+        tab_id: The tab ID to close (from browser_get_tabs). Can be numeric string or number.
+    """
+    token = _get_token()
+    def _run():
+        d = get_driver()
+        ctx = d.get_context(token)
+        if len(d.get_all_sessions(token=token)) == 0:
+            return json.dumps({"status": "error", "msg": "No browser tabs connected."}, ensure_ascii=False)
+        importlib.reload(simphtml)
+        # Build the JSON command expected by the extension
+        try:
+            # try to pass a number when possible
+            tid = int(tab_id) if isinstance(tab_id, str) and tab_id.isdigit() else tab_id
+        except Exception:
+            tid = tab_id
+        cmd = json.dumps({"cmd": "tabs", "method": "remove", "tabId": tid})
+        result = simphtml.execute_js_rich(cmd, d, no_monitor=True, token=token)
+        # 返回 execute_js_rich 的结构（status / ok / error 等）
+        return json.dumps(result, ensure_ascii=False, default=str)
+    return await asyncio.to_thread(_run)
+
+
+@mcp.tool()
 async def browser_batch(commands: list[dict[str, Any]], tab_id: str = "", timeout: float = 20) -> str:
     """Run multiple extension/CDP commands in one request.
 

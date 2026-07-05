@@ -82,6 +82,20 @@ async function handleExtMessage(msg, sender) {
         const tab = await chrome.tabs.update(msg.tabId, { active: true });
         await chrome.windows.update(tab.windowId, { focused: true });
         return { ok: true };
+      } else if (msg.method === 'remove' || msg.method === 'close') {
+        // 新增：关闭指定 tab
+        // tabId 可能是数字或字符串，chrome.tabs.remove 接受 Number 或 Array
+        const tid = msg.tabId;
+        if (!tid) return { ok: false, error: 'no tabId' };
+        // 支持单个 id 或数组
+        if (Array.isArray(tid)) {
+          await chrome.tabs.remove(tid);
+        } else {
+          await chrome.tabs.remove(Number(tid));
+        }
+        // send tabs update to keep server in sync (tabs.onRemoved 也会触发)
+        try { sendTabsUpdate(); } catch (_) {}
+        return { ok: true };
       } else {
         const tabs = (await chrome.tabs.query({})).filter(t => isScriptable(t.url));
         const data = tabs.map(t => ({ id: t.id, url: t.url, title: t.title, active: t.active, windowId: t.windowId }));

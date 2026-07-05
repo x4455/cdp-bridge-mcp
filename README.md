@@ -132,6 +132,7 @@ MCP 服务当前暴露以下 10 个工具：
 | `browser_execute_js` | `script` (str, 必填), `switch_tab_id` (str), `no_monitor` (bool) | 在浏览器中执行 JavaScript 并捕获返回值及 DOM 变更 diff。`no_monitor` 跳过 DOM 监控可提速；`switch_tab_id` 先切换到目标标签页再执行 |
 | `browser_switch_tab` | `tab_id` (str, 必填) | 切换 MCP 侧的活动标签页（不改变用户在 Chrome 中看到的标签页），后续工具调用将作用于该标签页 |
 | `browser_focus_tab` | `tab_id` (str, 必填) | 将 Chrome 标签页置于前台并聚焦窗口，使标签页对用户可见。区别于 `browser_switch_tab`（仅切换 MCP 侧会话），此工具会实际激活 Chrome 窗口和标签页 |
+| `browser_close_tab` | `tab_id` (str, 必填) | 关闭指定的 Chrome 标签页（tab_id 来自 browser_get_tabs）。返回扩展执行结果（ok:true / ok:false）。示例：`browser_close_tab tab_id=123` 或 使用 `browser_execute_js script='{"cmd":"tabs","method":"remove","tabId":123}'` |
 | `browser_batch` | `commands` (list[dict], 必填), `tab_id` (str), `timeout` (float) | 一次请求批量执行多个扩展/CDP 命令，适合需要复用 CDP 上下文的复杂操作链 |
 | `browser_wait` | `condition_js` (str, 必填), `timeout` (float), `interval` (float), `switch_tab_id` (str) | 轮询等待 JavaScript 条件表达式返回真值。`timeout` 最长等待秒数（默认 10）；`interval` 检查间隔秒数（默认 0.5） |
 | `browser_navigate` | `url` (str, 必填) | 导航活动标签页到指定 URL |
