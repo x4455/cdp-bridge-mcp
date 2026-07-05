@@ -68,7 +68,7 @@ async def browser_get_tabs() -> str:
 
 
 @mcp.tool()
-async def browser_scan(tabs_only: bool = False, switch_tab_id: str = "", text_only: bool = False) -> str:
+async def browser_scan(tabs_only: bool = False, switch_tab_id: int | str | None = None, text_only: bool = False) -> str:
     """Get simplified HTML content of the active tab plus tab list. The HTML is optimized for LLM consumption (stripped of scripts, styles, invisible elements).
 
     Args:
@@ -105,7 +105,7 @@ async def browser_scan(tabs_only: bool = False, switch_tab_id: str = "", text_on
 
 
 @mcp.tool()
-async def browser_execute_js(script: str, switch_tab_id: str = "", no_monitor: bool = False) -> str:
+async def browser_execute_js(script: str, switch_tab_id: int | str | None = None, no_monitor: bool = False) -> str:
     """Execute JavaScript in the browser and capture results plus DOM changes.
 
     Args:
@@ -128,7 +128,7 @@ async def browser_execute_js(script: str, switch_tab_id: str = "", no_monitor: b
 
 
 @mcp.tool()
-async def browser_switch_tab(tab_id: str) -> str:
+async def browser_switch_tab(tab_id: int | str) -> str:
     """Switch the active MCP browser tab without changing the visible Chrome tab.
 
     Args:
@@ -152,7 +152,7 @@ async def browser_switch_tab(tab_id: str) -> str:
 
 
 @mcp.tool()
-async def browser_focus_tab(tab_id: str) -> str:
+async def browser_focus_tab(tab_id: int | str) -> str:
     """Bring a Chrome tab to the foreground: activate the tab AND focus its window.
 
     Unlike browser_switch_tab (which only changes the MCP-side active session
@@ -190,7 +190,7 @@ async def browser_focus_tab(tab_id: str) -> str:
 
 
 @mcp.tool()
-async def browser_close_tab(tab_id: str) -> str:
+async def browser_close_tab(tab_id: int | str) -> str:
     """Close a Chrome tab by tab ID.
 
     Args:
@@ -217,7 +217,7 @@ async def browser_close_tab(tab_id: str) -> str:
 
 
 @mcp.tool()
-async def browser_batch(commands: list[dict[str, Any]], tab_id: str = "", timeout: float = 20) -> str:
+async def browser_batch(commands: list[dict[str, Any]], tab_id: int | str | None = None, timeout: float = 20) -> str:
     """Run multiple extension/CDP commands in one request.
 
     Args:
@@ -236,7 +236,7 @@ async def browser_batch(commands: list[dict[str, Any]], tab_id: str = "", timeou
 
 
 @mcp.tool()
-async def browser_wait(condition_js: str, timeout: float = 10, interval: float = 0.5, switch_tab_id: str = "") -> str:
+async def browser_wait(condition_js: str, timeout: float = 10, interval: float = 0.5, switch_tab_id: int | str | None = None) -> str:
     """Wait until JavaScript condition returns a truthy value.
 
     Args:
@@ -301,7 +301,7 @@ async def browser_navigate(url: str) -> str:
 
 
 @mcp.tool()
-async def browser_screenshot(tab_id: str = "") -> str:
+async def browser_screenshot(tab_id: int | str | None = None) -> str:
     """Take a screenshot of the active tab (returns base64 PNG).
 
     Args:
