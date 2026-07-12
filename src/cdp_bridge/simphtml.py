@@ -664,7 +664,7 @@ def get_temp_texts(driver, token=None):
         log(e)
         return []
     
-import time, re, os
+import time, re
 def get_main_block(driver, extra_js="", text_only=False, token=None):
     page = driver.execute_js(f"{extra_js}\n{js_optHTML}\nreturn optHTML({str(text_only).lower()});", token=token).get('data', '')
     if text_only:

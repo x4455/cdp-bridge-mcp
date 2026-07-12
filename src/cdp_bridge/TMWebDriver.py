@@ -1,9 +1,8 @@
 import json, threading, time, uuid, queue, socket, requests, traceback, sys
 from typing import Dict, Any, Optional, List
 from simple_websocket_server import WebSocketServer, WebSocket
-from bs4 import BeautifulSoup
-import bottle, random
-from bottle import route, template, request, response
+import bottle
+from bottle import request
 
 def log(*args, **kwargs):
     print(*args, file=sys.stderr, flush=True, **kwargs)
