@@ -249,6 +249,43 @@ CDP_BRIDGE_TOKENS="team_alice,team_bob" uvx cdp-bridge@latest --transport stream
 
 When `--transport` is omitted, `stdio` is used by default. `stdio` mode has no MCP HTTP port. In `streamable-http` mode, the MCP service URL is `http://127.0.0.1:<port>/mcp`.
 
+### MCP Benchmark (V2)
+
+This repository includes a V2 evaluation script that compares CDP Bridge and Playwright MCP using the same user queries, LLM, and tool-calling loop. It records:
+
+- task success rate and an interpretable answer-quality score;
+- API rounds, tool-call count, and tool success rate;
+- input/output tokens and wall-clock time;
+- per-call tool arguments, latency, returned character count, and errors.
+
+The script is available at [`reports/V-002-2026-07-12/eval_mcp_compare_v2.py`](../reports/V-002-2026-07-12/eval_mcp_compare_v2.py). Before running the full benchmark, prepare the browser extension, a CDP Bridge service, Playwright MCP, an Anthropic-compatible API, and `ANTHROPIC_API_KEY`:
+
+```bash
+export ANTHROPIC_API_KEY="your API key"
+export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"  # optional
+export ANTHROPIC_MODEL="deepseek-v4-pro"                       # optional
+
+# Three scenarios, repeated three times by default
+python reports/V-002-2026-07-12/eval_mcp_compare_v2.py
+
+# Select a scenario, or benchmark only one backend
+python reports/V-002-2026-07-12/eval_mcp_compare_v2.py --case numpy --repeats 3
+python reports/V-002-2026-07-12/eval_mcp_compare_v2.py --cdp-only
+
+# Check prerequisites and generate a report without calling the LLM
+python reports/V-002-2026-07-12/eval_mcp_compare_v2.py --preflight
+```
+
+The report is written to [`reports/V-002-2026-07-12/eval_compare_report.md`](../reports/V-002-2026-07-12/eval_compare_report.md). The sample run (July 12, 2026, one repetition per scenario) produced the following observations. These numbers describe that environment only; they are not universal results across networks, browser sessions, or model configurations:
+
+| Scenario | CDP Bridge | Playwright | Observation |
+|---|---:|---:|---|
+| First item on Xiaohongshu home page | 14.2s / 3 tool calls | 37.4s / 5 tool calls | CDP Bridge was faster and used fewer calls; content depends on login state and anti-bot controls |
+| Runoob NumPy bitwise-operations tutorial | 29.9s / 5 calls / 10,315 tokens | 68.1s / 10 calls / 18,647 tokens | CDP Bridge was lower on latency, calls, and tokens in this scenario |
+| Current browser tabs | 8.8s / 1 call | 4.4s / 1 call | Playwright was faster; the two browser sessions did not expose the same tab set |
+
+The benchmark's answer-quality score is an interpretable heuristic based on scenario-specific acceptance terms, not a substitute for human review. CDP Bridge connects to the user's real browser session, while Playwright normally uses an isolated browser environment; cookies, cache, page recommendations, network conditions, and security policies can differ. Treat this as an end-to-end workflow reference, not as a pure protocol or browser-engine benchmark.
+
 ### Token & Multi-User Isolation
 
 In `streamable-http` mode, the server isolates browser session spaces by token.
