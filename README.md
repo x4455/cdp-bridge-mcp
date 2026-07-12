@@ -254,6 +254,43 @@ CDP_BRIDGE_TOKENS="team_alice,team_bob" uvx cdp-bridge@latest --transport stream
 
 不传 `--transport` 时默认使用 `stdio`。`stdio` 模式没有 MCP HTTP 端口；`streamable-http` 模式的 MCP 服务地址为 `http://127.0.0.1:<port>/mcp`。
 
+### MCP 对比测评（V2）
+
+仓库提供了 V2 测评脚本，用相同的用户 query、LLM 和 MCP 工具调用循环，对比 CDP Bridge 与 Playwright MCP 的实际任务表现。测评记录以下指标：
+
+- 任务成功率、答案质量分数
+- API 调用轮次、工具调用次数及工具成功率
+- 输入/输出 Token 和总耗时
+- 每一次工具调用的参数、耗时、返回字符数和错误信息
+
+脚本位置：[reports/V-002-2026-07-12/eval_mcp_compare_v2.py](reports/V-002-2026-07-12/eval_mcp_compare_v2.py)。运行完整测评前，需要准备浏览器扩展、CDP Bridge 服务、Playwright MCP、Anthropic 兼容 API，以及 `ANTHROPIC_API_KEY`：
+
+```bash
+export ANTHROPIC_API_KEY="你的 API Key"
+export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"  # 可选
+export ANTHROPIC_MODEL="deepseek-v4-pro"                       # 可选
+
+# 默认 3 个场景，每个场景重复 3 次
+python reports/V-002-2026-07-12/eval_mcp_compare_v2.py
+
+# 只测某个场景，或只测一侧
+python reports/V-002-2026-07-12/eval_mcp_compare_v2.py --case numpy --repeats 3
+python reports/V-002-2026-07-12/eval_mcp_compare_v2.py --cdp-only
+
+# 只检查依赖并生成报告，不调用 LLM
+python reports/V-002-2026-07-12/eval_mcp_compare_v2.py --preflight
+```
+
+报告会写入 [reports/V-002-2026-07-12/eval_compare_report.md](reports/V-002-2026-07-12/eval_compare_report.md)。V2 的示例运行结果（2026-07-12、每个场景 1 次）如下，数值仅用于说明该次环境下的观测，不代表所有网络、浏览器登录态或模型配置：
+
+| 场景 | CDP Bridge | Playwright | 观测 |
+|---|---:|---:|---|
+| 小红书首页首条内容 | 14.2s / 3 次工具调用 | 37.4s / 5 次工具调用 | CDP Bridge 更快、调用更少；页面内容受风控和登录态影响 |
+| 菜鸟教程 NumPy 位运算 | 29.9s / 5 次调用 / 10,315 Token | 68.1s / 10 次调用 / 18,647 Token | CDP Bridge 在该场景耗时、调用次数和 Token 更低 |
+| 当前标签页列表 | 8.8s / 1 次调用 | 4.4s / 1 次调用 | Playwright 更快；两侧浏览器会话中的标签页数量并不等价 |
+
+测评中的“答案质量”是基于场景验收词的可解释启发式分数，不替代人工核验。CDP Bridge 连接用户的真实浏览器会话，而 Playwright 通常使用独立浏览器环境；两者的 Cookie、缓存、页面推荐流、网络和安全策略可能不同，因此该测评是端到端工作流参考，不是纯协议或浏览器引擎基准。
+
 ### Token 与多用户隔离
 
 `streamable-http` 模式下，服务端会按 token 隔离浏览器会话空间。
