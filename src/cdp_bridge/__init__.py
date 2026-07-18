@@ -2,7 +2,7 @@ import argparse
 import os
 from pathlib import Path
 
-from .server import configure_driver, mcp, current_token
+from .server import configure_driver, current_token as current_token, mcp
 
 
 def main():
@@ -79,9 +79,6 @@ def _run_with_token_middleware(args):
 
     async def _serve():
         import uvicorn
-        from starlette.middleware import Middleware
-        from starlette.middleware.base import BaseHTTPMiddleware
-
         from .middleware import TokenAuthMiddleware
 
         # Get the base Starlette app from FastMCP

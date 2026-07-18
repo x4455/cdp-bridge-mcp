@@ -664,7 +664,7 @@ def get_temp_texts(driver, token=None):
         log(e)
         return []
     
-import time, re, os
+import time, re
 def get_main_block(driver, extra_js="", text_only=False, token=None):
     page = driver.execute_js(f"{extra_js}\n{js_optHTML}\nreturn optHTML({str(text_only).lower()});", token=token).get('data', '')
     if text_only:
@@ -742,7 +742,8 @@ def get_html(driver, cutlist=False, maxchars=35000, instruction="", extra_js="",
         if keep: keep[-1].insert_after(hint_tag)
         for it in removed: it.decompose()
     ss = str(optimize_html_for_tokens(soup)) if lists else html
-    log(f"[get_html] Result: {len(html)} -> {len(ss)} chars after cutlist ({100-len(ss)*100//len(html)}% saved)")
+    saved_percent = 0 if not html else 100 - len(ss) * 100 // len(html)
+    log(f"[get_html] Result: {len(html)} -> {len(ss)} chars after cutlist ({saved_percent}% saved)")
     if len(ss) > maxchars: ss = str(smart_truncate(soup, maxchars))
     return ss
 

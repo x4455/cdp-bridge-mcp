@@ -1,6 +1,10 @@
-/dist/
+.DS_Store
+__pycache__/
+*.py[cod]
 /.venv/
-/src/cdp_bridge.egg-info/
+/build/
+/dist/
+*.egg-info/
 /.idea/
 /.mcp.json
-/src/cdp_bridge/__pycache__/
+.ruff_cache/
